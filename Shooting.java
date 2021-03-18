@@ -102,7 +102,9 @@ public class Shooting extends JFrame implements KeyListener{
 
 	private void mainProcess(){
 		int timeCnt = 0;
-		try{Thread.sleep(3000);}catch(InterruptedException e){System.out.println(e);}
+
+		// wait process of ParamaterWindow's focus
+		try{Thread.sleep(1000);}catch(InterruptedException e){System.out.println(e);}
 		this.requestFocus();
 		while(true){
 			
