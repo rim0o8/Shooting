@@ -25,20 +25,23 @@ public class Shooting extends JPanel implements KeyListener{
 	final boolean CONFIC_USR_PLAY = true;
 	//final boolean CONFIG_ZOMBI_ENEMY = false;
 
-	final int framerate = 100, width = this.getWidth(), height = this.getHeight();
+	final int framerate = 100, width = 500, height = 500;
 	int timeCnt = 0;
 	// playerInterfaceの処理コード短縮のために
 	// trueなら1 falseなら0
-	a_pressed = 0, s_pressed = 0, d_pressed = 0, w_pressed = 0, j_pressed = 0, k_pressed = 0, l_pressed = 0, i_pressed = 0;
+	int a_pressed = 0, s_pressed = 0, d_pressed = 0, w_pressed = 0, j_pressed = 0, k_pressed = 0, l_pressed = 0, i_pressed = 0;
 	Shooter[] shooters = new Shooter[11];
 
 	public static void main(String[] args){new Shooting();}
 	public Shooting(){
 		JFrame frame = new JFrame("Shooting");
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		frame.setSize(500,500);
+		// 22はJFrameのトップバーのズレ
+		frame.setSize(this.width,this.height+22);
 		frame.setResizable(false);
 		frame.addKeyListener(this);
+		this.setBackground(Color.WHITE);
+		this.setSize(this.width,this.height);
 
 		shooters[0]  = new Shooter(250, 400, 10, Color.BLUE);
 		shooters[1]  = new Shooter(60, 80, 10, Color.LIGHT_GRAY);
@@ -48,12 +51,10 @@ public class Shooting extends JPanel implements KeyListener{
 		shooters[5]  = new Shooter(400, 300, 10, Color.YELLOW);
 		shooters[6]  = new Shooter(100, 300, 10, Color.DARK_GRAY);
 		shooters[7]  = new Shooter(150, 110, 10, Color.GRAY);
-		shooters[8]  = new Shooter(100, 100, 10, Color.MAGENTA);
-		shooters[9]  = new Shooter(90, 100, 10, Color.PINK);
+		shooters[8]  = new Shooter(200, 100, 10, Color.MAGENTA);
+		shooters[9]  = new Shooter(290, 100, 10, Color.PINK);
 		shooters[10] = new Shooter(100, 100, 10, Color.ORANGE);
 
-		this.setBackground(Color.WHITE);
-		this.setSize(500,500);
 		frame.add(this);
 		frame.setVisible(true);
 
@@ -67,11 +68,12 @@ public class Shooting extends JPanel implements KeyListener{
 				canShot = true;
 				timeCnt = 0;
 			}
-			// データの更新
+			// フレームレートに従ったスレッド停止
 			try{Thread.sleep(1000/framerate);}catch(InterruptedException e){System.out.println(e);}
+			// データの更新
 			for (int i=0; i<shooters.length; i++) {
-				if (CONFIC_USR_PLAY){if (i == 0){playerInterface(canShot);}}
-				else{shooters[i].ai_interface(canShot, i);}
+				if (i == 0 && CONFIC_USR_PLAY){playerInterface(canShot);}
+				else{shooters[i].ai_interface(canShot, this.width, this.height, i, shooters);}
 			}
 			//再描画
 			repaint();
@@ -185,7 +187,7 @@ class MoveObj{
 	public MoveObj(int x, int y, int r, Color color){
 		this.x      = x;	// 機体の中心のx座標
 		this.y      = y;	// 機体の中心のy座標
-		this.r = r;
+		this.r 		= r;
 		this.color  = color;
 		this.active = true;
 		this.next_x = 0;	// 次のframeで進むxの量
@@ -250,19 +252,24 @@ class Shooter extends MoveObj{
 		if (active){
 			g.setColor(this.color);
 			g.fillOval(this.x-this.r, this.y-this.r, 2*this.r, 2*this.r);
-			// インスタンス化した弾丸を描画する
-			// 最終的には、画面外へでたものは配列から排除する仕様にすること
 		}
+		// インスタンス化した弾丸を描画する
+		// 最終的には、画面外へでたものは配列から排除する仕様にすること
 		for (int i=0; i<bullets.size(); i++) {bullets.get(i).draw(g);}
 	}
-	public void ai_interface(boolean canShot, int index){
+	public void ai_interface(boolean canShot, int width, int height, int index, Shooter[] shooters){
 		/*
 		this.shooters[0].update(next_x, next_y, this.width, this.height);
-		if (canShot){	// 大体0.1秒ごと
-			if (l_pressed - j_pressed != 0 || k_pressed - i_pressed != 0){
-				this.shooters[0].shot(l_pressed - j_pressed, k_pressed - i_pressed);
-			}
-		}
 		*/
+
+		if (canShot){	// 大体0.1秒ごと
+			this.aim_and_shot(shooters[0]);
+		}
+		this.update(0, 0, width, height);
+	}
+	private void aim_and_shot(Shooter target){
+		dis_x = target.getX() - this.x;
+		dis_y = target.getY() - this.y;
+		
 	}
 }
