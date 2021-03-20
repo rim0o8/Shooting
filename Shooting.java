@@ -25,29 +25,20 @@ public class Shooting extends JPanel implements KeyListener{
 	final boolean CONFIC_USR_PLAY = true;
 	//final boolean CONFIG_ZOMBI_ENEMY = false;
 
-	final int framerate = 100;
-	int width, height;
+	final int framerate = 100, width = this.getWidth(), height = this.getHeight();
 	int timeCnt = 0;
 	// playerInterfaceの処理コード短縮のために
 	// trueなら1 falseなら0
-	int a_pressed = 0, s_pressed = 0, d_pressed = 0, w_pressed = 0, j_pressed = 0, k_pressed = 0, l_pressed = 0, i_pressed = 0;
+	a_pressed = 0, s_pressed = 0, d_pressed = 0, w_pressed = 0, j_pressed = 0, k_pressed = 0, l_pressed = 0, i_pressed = 0;
 	Shooter[] shooters = new Shooter[11];
 
-	public static void main(String[] args){
-		new Shooting();
-	}
+	public static void main(String[] args){new Shooting();}
 	public Shooting(){
 		JFrame frame = new JFrame("Shooting");
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.setSize(500,500);
 		frame.setResizable(false);
 		frame.addKeyListener(this);
-
-		this.setBackground(Color.WHITE);
-		this.setSize(500,500);
-		
-		width  = this.getWidth();
-		height = this.getHeight();
 
 		shooters[0]  = new Shooter(250, 400, 10, Color.BLUE);
 		shooters[1]  = new Shooter(60, 80, 10, Color.LIGHT_GRAY);
@@ -61,6 +52,8 @@ public class Shooting extends JPanel implements KeyListener{
 		shooters[9]  = new Shooter(90, 100, 10, Color.PINK);
 		shooters[10] = new Shooter(100, 100, 10, Color.ORANGE);
 
+		this.setBackground(Color.WHITE);
+		this.setSize(500,500);
 		frame.add(this);
 		frame.setVisible(true);
 
@@ -78,7 +71,7 @@ public class Shooting extends JPanel implements KeyListener{
 			try{Thread.sleep(1000/framerate);}catch(InterruptedException e){System.out.println(e);}
 			for (int i=0; i<shooters.length; i++) {
 				if (CONFIC_USR_PLAY){if (i == 0){playerInterface(canShot);}}
-				else{shooters[i].ai_interface(canShot);}
+				else{shooters[i].ai_interface(canShot, i);}
 			}
 			//再描画
 			repaint();
@@ -97,7 +90,6 @@ public class Shooting extends JPanel implements KeyListener{
 			}
 		}
 	}
-
 	private boolean isOverlap(MoveObj a, MoveObj b){
 		/*
 			aとbがactiveかつ重なっていないならfalse
@@ -185,7 +177,7 @@ public class Shooting extends JPanel implements KeyListener{
 	@Override public void keyTyped(KeyEvent e){}
 }
 class MoveObj{
-	public int x, y, speed, r;
+	public int x, y, r;
 	public Color color;
 	public boolean active;
 	public int next_x, next_y;
@@ -263,7 +255,7 @@ class Shooter extends MoveObj{
 		}
 		for (int i=0; i<bullets.size(); i++) {bullets.get(i).draw(g);}
 	}
-	public void ai_interface(boolean canShot){
+	public void ai_interface(boolean canShot, int index){
 		/*
 		this.shooters[0].update(next_x, next_y, this.width, this.height);
 		if (canShot){	// 大体0.1秒ごと
