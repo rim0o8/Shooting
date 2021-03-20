@@ -9,7 +9,6 @@
 	->  	paint()でそれぞれのShootingクラスのdraw()が呼ばれる
 	->		draw()で描画される
 */
-
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
@@ -22,7 +21,6 @@ import java.applet.*;
 import java.util.ArrayList;
 
 public class Shooting extends JPanel implements KeyListener{
-
 	// coonfig
 	final boolean CONFIC_USR_PLAY = true;
 	//final boolean CONFIG_ZOMBI_ENEMY = false;
@@ -186,7 +184,6 @@ public class Shooting extends JPanel implements KeyListener{
 	}
 	@Override public void keyTyped(KeyEvent e){}
 }
-
 class MoveObj{
 	public int x, y, speed, r;
 	public Color color;
@@ -213,7 +210,6 @@ class MoveObj{
 	public int getR(){return this.r;}
 	public boolean isActive(){return active;}
 	public void die(){this.active = false;}
-
 	public void update(int next_x, int next_y, int width, int height){
 		this.x += next_x;
 		this.y += next_y;
@@ -233,7 +229,6 @@ class MoveObj{
 		}
 	}
 }
-
 class Bullet extends MoveObj{
 	Bullet(int x, int y, int next_x, int next_y){
 		super(x, y, 3, Color.RED);
@@ -244,7 +239,6 @@ class Bullet extends MoveObj{
 		this.y += next_y;
 	}
 }
-
 class Shooter extends MoveObj{
 	ArrayList<Bullet> bullets = new ArrayList<Bullet>(0);
 	public Shooter(int x, int y, int r, Color color){super(x, y, r, color);}
@@ -257,9 +251,7 @@ class Shooter extends MoveObj{
 	public Bullet[] getBullets(){return bullets.toArray(new Bullet[bullets.size()]);}
 	public void _update(){
 		//自分の発射した弾丸のupdate()をする
-		for (int i=0; i<bullets.size(); i++) {
-			bullets.get(i).update();
-		}
+		for (int i=0; i<bullets.size(); i++) {bullets.get(i).update();}
 	}
 	public void draw(Graphics g){
 		// MoveObj同様に自分を描画する
@@ -269,9 +261,7 @@ class Shooter extends MoveObj{
 			// インスタンス化した弾丸を描画する
 			// 最終的には、画面外へでたものは配列から排除する仕様にすること
 		}
-		for (int i=0; i<bullets.size(); i++) {
-				bullets.get(i).draw(g);
-		}
+		for (int i=0; i<bullets.size(); i++) {bullets.get(i).draw(g);}
 	}
 	public void ai_interface(boolean canShot){
 		/*
@@ -284,17 +274,3 @@ class Shooter extends MoveObj{
 		*/
 	}
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
