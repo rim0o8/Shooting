@@ -25,7 +25,8 @@ public class Shooting extends JPanel implements KeyListener{
 	final boolean CONFIC_USR_PLAY = true;
 	//final boolean CONFIG_ZOMBI_ENEMY = false;
 
-	final int framerate = 100, width = 500, height = 500;
+	// speedはplayer_interfaceとai_interfaceで参照するMoveObjの動く速度
+	final int framerate = 600, width = 500, height = 500, speed = 1;
 	int timeCnt = 0;
 	// playerInterfaceの処理コード短縮のために
 	// trueなら1 falseなら0
@@ -43,8 +44,8 @@ public class Shooting extends JPanel implements KeyListener{
 		this.setBackground(Color.WHITE);
 		this.setSize(this.width,this.height);
 
-		shooters[0]  = new Shooter(250, 400, 10, Color.BLUE);
-		shooters[1]  = new Shooter(60, 80, 10, Color.LIGHT_GRAY);
+		shooters[0]  = new Shooter(60, 80, 10, Color.LIGHT_GRAY);
+		shooters[1]  = new Shooter(250, 300, 10, Color.BLUE);
 		shooters[2]  = new Shooter(80, 50, 10, Color.BLACK);
 		shooters[3]  = new Shooter(90, 100, 10, Color.CYAN);
 		shooters[4]  = new Shooter(50, 150, 10, Color.GREEN);
@@ -63,6 +64,9 @@ public class Shooting extends JPanel implements KeyListener{
 	private void proc(){
 		boolean canShot = true;
 		while(true){
+			// debug
+			//for (int i=0; i<shooters.length; i++) {System.out.println("Shooter" + String.valueOf(i) + ": " + String.valueOf(shooters[i].active));}
+
 			timeCnt += 1000/framerate;
 			if (timeCnt > 100){
 				canShot = true;
@@ -72,8 +76,8 @@ public class Shooting extends JPanel implements KeyListener{
 			try{Thread.sleep(1000/framerate);}catch(InterruptedException e){System.out.println(e);}
 			// データの更新
 			for (int i=0; i<shooters.length; i++) {
-				if (i == 0 && CONFIC_USR_PLAY){playerInterface(canShot);}
-				else{shooters[i].ai_interface(canShot, this.width, this.height, i, shooters);}
+				if (CONFIC_USR_PLAY){playerInterface(canShot, i);}
+				else{shooters[i].ai_interface(canShot, this.width, this.height, i);}
 			}
 			//再描画
 			repaint();
@@ -84,13 +88,16 @@ public class Shooting extends JPanel implements KeyListener{
 			canShot = false;
 		}
 	}
-	private void playerInterface(boolean canShot){
-		this.shooters[0].update(d_pressed - a_pressed, s_pressed - w_pressed, this.width, this.height);
-		if (canShot){	// 大体0.1秒ごと
-			if (l_pressed - j_pressed != 0 || k_pressed - i_pressed != 0){
-				this.shooters[0].shot(l_pressed - j_pressed, k_pressed - i_pressed);
+	private void playerInterface(boolean canShot, int index){
+		int next_x = d_pressed - a_pressed, next_y = s_pressed - w_pressed;
+		int shot_next_x = l_pressed - j_pressed, shot_next_y = k_pressed - i_pressed;
+		if (canShot){	// 大体1.1秒ごと
+			if (shot_next_x != 0 || shot_next_y != 0){
+				this.shooters[index].shot(shot_next_x*speed, shot_next_y*speed);
 			}
 		}
+		// 問題点！！！！！！！！直すこと！！！！！！！
+		this.shooters[index].update(next_x*speed, next_y*speed, this.width, this.height);
 	}
 	private boolean isOverlap(MoveObj a, MoveObj b){
 		/*
@@ -131,13 +138,14 @@ public class Shooting extends JPanel implements KeyListener{
 		*/
 		Bullet[] bullets;
 
-		for(int i=0; i<shooters.length; i++){
-			if(shooters[i].isActive()){
-				for(int j=0; j<shooters.length; j++){
-					if(i==j){break;}
+		for (int i=0; i<shooters.length; i++){
+			if (shooters[i].isActive()){
+				for (int j=0; j<shooters.length; j++){
+					if (i == j){break;}
 					bullets = shooters[j].getBullets();
-					for(int k=0; k<bullets.length; k++){
-						if(isOverlap(shooters[i], bullets[k])){
+					for (int k=0; k<bullets.length; k++){
+						if (isOverlap(shooters[i], bullets[k])){
+							System.out.println(i);
 							shooters[i].die();
 							bullets[k].die();
 						}
@@ -252,24 +260,23 @@ class Shooter extends MoveObj{
 		if (active){
 			g.setColor(this.color);
 			g.fillOval(this.x-this.r, this.y-this.r, 2*this.r, 2*this.r);
+//			g.setColor(Color.RED);
+//			g.fillOval(this.x-this.r, this.y-this.r, 1, 1);
 		}
 		// インスタンス化した弾丸を描画する
 		// 最終的には、画面外へでたものは配列から排除する仕様にすること
 		for (int i=0; i<bullets.size(); i++) {bullets.get(i).draw(g);}
 	}
-	public void ai_interface(boolean canShot, int width, int height, int index, Shooter[] shooters){
+	public void ai_interface(boolean canShot, int width, int height, int index){
 		/*
 		this.shooters[0].update(next_x, next_y, this.width, this.height);
 		*/
-
-		if (canShot){	// 大体0.1秒ごと
-			this.aim_and_shot(shooters[0]);
-		}
+	//	int dis_x = target.getX() - this.x;
+	//	int dis_y = target.getY() - this.y;
 		this.update(0, 0, width, height);
-	}
-	private void aim_and_shot(Shooter target){
-		int dis_x = target.getX() - this.x;
-		int dis_y = target.getY() - this.y;
-
+		if (canShot){	// 大体0.1秒ごと
+			this.shot(1,1);
+		}
+		
 	}
 }
