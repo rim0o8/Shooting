@@ -268,8 +268,8 @@ class Shooter extends MoveObj{
 		this.update(0, 0, width, height);
 	}
 	private void aim_and_shot(Shooter target){
-		dis_x = target.getX() - this.x;
-		dis_y = target.getY() - this.y;
-		
+		int dis_x = target.getX() - this.x;
+		int dis_y = target.getY() - this.y;
+
 	}
 }
