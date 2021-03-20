@@ -51,17 +51,17 @@ public class Shooting extends JPanel implements KeyListener{
 		width  = this.getWidth();
 		height = this.getHeight();
 
-		shooters[0]  = new Shooter(250, 400, 10, 1, Color.BLUE, 0);
-		shooters[1]  = new Shooter(60, 80, 10, 1, Color.LIGHT_GRAY, 1);
-		shooters[2]  = new Shooter(80, 50, 10, 1, Color.BLACK, 2);
-		shooters[3]  = new Shooter(90, 100, 10, 1, Color.CYAN, 3);
-		shooters[4]  = new Shooter(50, 150, 10, 1, Color.GREEN, 4);
-		shooters[5]  = new Shooter(400, 300, 10, 1, Color.YELLOW, 5);
-		shooters[6]  = new Shooter(100, 300, 10, 1, Color.DARK_GRAY, 6);
-		shooters[7]  = new Shooter(150, 110, 10, 1, Color.GRAY, 7);
-		shooters[8]  = new Shooter(100, 100, 10, 1, Color.MAGENTA, 8);
-		shooters[9]  = new Shooter(90, 100, 10, 1, Color.PINK, 9);
-		shooters[10] = new Shooter(100, 100, 10, 1, Color.ORANGE,10);
+		shooters[0]  = new Shooter(250, 400, 10, 1, Color.BLUE);
+		shooters[1]  = new Shooter(60, 80, 10, 1, Color.LIGHT_GRAY);
+		shooters[2]  = new Shooter(80, 50, 10, 1, Color.BLACK);
+		shooters[3]  = new Shooter(90, 100, 10, 1, Color.CYAN);
+		shooters[4]  = new Shooter(50, 150, 10, 1, Color.GREEN);
+		shooters[5]  = new Shooter(400, 300, 10, 1, Color.YELLOW);
+		shooters[6]  = new Shooter(100, 300, 10, 1, Color.DARK_GRAY);
+		shooters[7]  = new Shooter(150, 110, 10, 1, Color.GRAY);
+		shooters[8]  = new Shooter(100, 100, 10, 1, Color.MAGENTA);
+		shooters[9]  = new Shooter(90, 100, 10, 1, Color.PINK);
+		shooters[10] = new Shooter(100, 100, 10, 1, Color.ORANGE);
 
 		frame.add(this);
 		frame.setVisible(true);
@@ -188,19 +188,17 @@ public class Shooting extends JPanel implements KeyListener{
 }
 
 class MoveObj{
-	public final int id;
 	public int x, y, speed, r;
 	public Color color;
 	public boolean active;
 	public int next_x, next_y;
 
-	public MoveObj(int x, int y, int r, int speed, Color color, int id){
+	public MoveObj(int x, int y, int r, int speed, Color color){
 		this.x      = x;	// 機体の中心のx座標
 		this.y      = y;	// 機体の中心のy座標
 		this.r = r;
 		this.speed  = speed;
 		this.color  = color;
-		this.id     = id;
 		this.active = true;
 		this.next_x = 0;	// 次のframeで進むxの量
 		this.next_y = 0;	// 次のframeで進むyの量
@@ -238,8 +236,8 @@ class MoveObj{
 }
 
 class Bullet extends MoveObj{
-	Bullet(int x, int y, int next_x, int next_y, int id){
-		super(x, y, 3, 1, Color.RED, id);
+	Bullet(int x, int y, int next_x, int next_y){
+		super(x, y, 3, 1, Color.RED);
 		setNextMove(next_x, next_y);
 	}
 	public void update(){
@@ -250,13 +248,12 @@ class Bullet extends MoveObj{
 
 class Shooter extends MoveObj{
 	ArrayList<Bullet> bullets = new ArrayList<Bullet>(0);
-	public Shooter(int x, int y, int r, int speed, Color color, int id){super(x, y, r, speed, color, id);}
+	public Shooter(int x, int y, int r, int speed, Color color){super(x, y, r, speed, color);}
 
 	public void shot(int next_x, int next_y){
-		// bulletsのsizeのidを持ったBulletをbulletsに追加
 		// もしnext_x, next_yが両方とも0なら発射しない
 		if (!active){return;}
-		bullets.add(new Bullet(this.getX(), this.getY(), next_x, next_y, bullets.size()));
+		bullets.add(new Bullet(this.getX(), this.getY(), next_x, next_y));
 	}
 	public Bullet[] getBullets(){return bullets.toArray(new Bullet[bullets.size()]);}
 	public void _update(){
@@ -278,7 +275,14 @@ class Shooter extends MoveObj{
 		}
 	}
 	public void ai_interface(boolean canShot){
-		
+		/*
+		this.shooters[0].update(next_x, next_y, this.width, this.height);
+		if (canShot){	// 大体0.1秒ごと
+			if (l_pressed - j_pressed != 0 || k_pressed - i_pressed != 0){
+				this.shooters[0].shot(l_pressed - j_pressed, k_pressed - i_pressed);
+			}
+		}
+		*/
 	}
 }
 
