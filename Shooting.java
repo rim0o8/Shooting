@@ -23,6 +23,10 @@ import java.util.ArrayList;
 
 public class Shooting extends JPanel implements KeyListener{
 
+	// coonfig
+	final boolean CONFIC_USR_PLAY = true;
+	//final boolean CONFIG_ZOMBI_ENEMY = false;
+
 	final int framerate = 100;
 	int width, height;
 	int timeCnt = 0;
@@ -65,12 +69,18 @@ public class Shooting extends JPanel implements KeyListener{
 		proc();
 	}
 	private void proc(){
+		boolean canShot = true;
 		while(true){
+			timeCnt += 1000/framerate;
+			if (timeCnt > 100){
+				canShot = true;
+				timeCnt = 0;
+			}
 			// データの更新
 			try{Thread.sleep(1000/framerate);}catch(InterruptedException e){System.out.println(e);}
-			playerInterface(a_pressed, s_pressed, d_pressed, w_pressed, j_pressed, k_pressed, l_pressed, i_pressed);
 			for (int i=0; i<shooters.length; i++) {
-				shooters[i].update(this.width, this.height);
+				if (CONFIC_USR_PLAY){if (i == 0){playerInterface(canShot);}}
+				else{shooters[i].ai_interface(canShot);}
 			}
 			//再描画
 			repaint();
@@ -78,8 +88,18 @@ public class Shooting extends JPanel implements KeyListener{
 			isClisionAllShooter();
 			// 弾丸の当たり判定を行う
 			isShotAllShooter();
+			canShot = false;
 		}
 	}
+	private void playerInterface(boolean canShot){
+		this.shooters[0].update(d_pressed - a_pressed, s_pressed - w_pressed, this.width, this.height);
+		if (canShot){	// 大体0.1秒ごと
+			if (l_pressed - j_pressed != 0 || k_pressed - i_pressed != 0){
+				this.shooters[0].shot(l_pressed - j_pressed, k_pressed - i_pressed);
+			}
+		}
+	}
+
 	private boolean isOverlap(MoveObj a, MoveObj b){
 		/*
 			aとbがactiveかつ重なっていないならfalse
@@ -134,17 +154,6 @@ public class Shooting extends JPanel implements KeyListener{
 			}
 		}
 	}
-	private void playerInterface(int a_pressed,int s_pressed,int d_pressed,int w_pressed, int j_pressed, int k_pressed, int l_pressed, int i_pressed){
-		timeCnt += 1000/framerate;
-		this.shooters[0].setNextMove(d_pressed - a_pressed, s_pressed - w_pressed);
-		if (timeCnt > 100){	// 大体0.1秒ごと
-			if (l_pressed - j_pressed != 0 || k_pressed - i_pressed != 0){
-				this.shooters[0].shot(l_pressed - j_pressed, k_pressed - i_pressed);
-				timeCnt = 0;
-			}
-		}
-	}
-
 	@Override public void paint(Graphics g){
 		// 画面をリセット
 		g.clearRect(0, 0, this.width, this.height);
@@ -197,8 +206,8 @@ class MoveObj{
 		this.next_y = 0;	// 次のframeで進むyの量
 	}
 	public void setNextMove(int next_x, int next_y){
-		this.next_x = next_x * this.speed;
-		this.next_y = next_y * this.speed;
+		this.next_x = next_x;
+		this.next_y = next_y;
 	}
 	public int getX(){return this.x;}
 	public void setX(int x){this.x = x;}
@@ -208,17 +217,18 @@ class MoveObj{
 	public boolean isActive(){return active;}
 	public void die(){this.active = false;}
 
-	public void update(int width, int height){
-		this.x += this.next_x;
-		this.y += this.next_y;
+	public void update(int next_x, int next_y, int width, int height){
+		this.x += next_x * this.speed;
+		this.y += next_y * this.speed;
 		// 画面外に描画される場合は修正する
-		for(int i=0; i<10; i++){
-			if(this.x - this.r < 0){this.x = this.r;}
-			if(width < this.x + this.r){this.x = width - this.r;}
-			if(this.y - this.r < 0){this.y = this.r;}
-			if(height < this.y + this.r){this.y = height - this.r;}
-		}
+		if(this.x - this.r < 0){this.x = this.r;}
+		if(width < this.x + this.r){this.x = width - this.r;}
+		if(this.y - this.r < 0){this.y = this.r;}
+		if(height < this.y + this.r){this.y = height - this.r;}
+		_update();
 	}
+	// 継承先でupdateに加える処理
+	public void _update(){}
 	public void draw(Graphics g){
 		if (active){
 			g.setColor(this.color);
@@ -249,17 +259,7 @@ class Shooter extends MoveObj{
 		bullets.add(new Bullet(this.getX(), this.getY(), next_x, next_y, bullets.size()));
 	}
 	public Bullet[] getBullets(){return bullets.toArray(new Bullet[bullets.size()]);}
-	public void update(int width, int height){
-		// MooveObjと同様に自分の機体のデータ更新を行う画面外禁止処理
-		this.x += this.next_x;
-		this.y += this.next_y;
-		// 画面外に描画される場合は修正する
-		for(int i=0; i<10; i++){
-			if(this.x - this.r < 0){this.x = this.r;}
-			if(width < this.x + this.r){this.x = width - this.r;}
-			if(this.y - this.r < 0){this.y = this.r;}
-			if(height < this.y + this.r){this.y = height - this.r;}
-		}
+	public void _update(){
 		//自分の発射した弾丸のupdate()をする
 		for (int i=0; i<bullets.size(); i++) {
 			bullets.get(i).update();
@@ -276,6 +276,9 @@ class Shooter extends MoveObj{
 		for (int i=0; i<bullets.size(); i++) {
 				bullets.get(i).draw(g);
 		}
+	}
+	public void ai_interface(boolean canShot){
+		
 	}
 }
 
