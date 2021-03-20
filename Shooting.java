@@ -23,12 +23,13 @@ import java.util.ArrayList;
 
 public class Shooting extends JPanel implements KeyListener{
 
-	public final int framerate = 100;
+	final int framerate = 100;
 	int width, height;
+	int timeCnt = 0;
 	// playerInterfaceの処理コード短縮のために
 	// trueなら1 falseなら0
-	public int a_pressed = 0, s_pressed = 0, d_pressed = 0, w_pressed = 0;
-	public Shooter[] shooters = new Shooter[11];
+	int a_pressed = 0, s_pressed = 0, d_pressed = 0, w_pressed = 0, j_pressed = 0, k_pressed = 0, l_pressed = 0, i_pressed = 0;
+	Shooter[] shooters = new Shooter[11];
 
 	public static void main(String[] args){
 		new Shooting();
@@ -46,17 +47,17 @@ public class Shooting extends JPanel implements KeyListener{
 		width  = this.getWidth();
 		height = this.getHeight();
 
-		shooters[0]  = new Shooter(250, 400, 20, 1, Color.BLUE, 0);
-		shooters[1]  = new Shooter(60, 80, 20, 1, Color.LIGHT_GRAY, 1);
-		shooters[2]  = new Shooter(80, 50, 20, 1, Color.BLACK, 2);
-		shooters[3]  = new Shooter(90, 100, 20, 1, Color.CYAN, 3);
-		shooters[4]  = new Shooter(50, 150, 20, 1, Color.GREEN, 4);
-		shooters[5]  = new Shooter(300, 300, 20, 1, Color.YELLOW, 5);
-		shooters[6]  = new Shooter(100, 150, 20, 1, Color.DARK_GRAY, 6);
-		shooters[7]  = new Shooter(150, 120, 20, 1, Color.GRAY, 7);
-		shooters[8]  = new Shooter(200, 100, 20, 1, Color.MAGENTA, 8);
-		shooters[9]  = new Shooter(90, 200, 20, 1, Color.PINK, 9);
-		shooters[10] = new Shooter(200, 200, 20, 1, Color.ORANGE,10);
+		shooters[0]  = new Shooter(250, 400, 10, 1, Color.BLUE, 0);
+		shooters[1]  = new Shooter(60, 80, 10, 1, Color.LIGHT_GRAY, 1);
+		shooters[2]  = new Shooter(80, 50, 10, 1, Color.BLACK, 2);
+		shooters[3]  = new Shooter(90, 100, 10, 1, Color.CYAN, 3);
+		shooters[4]  = new Shooter(50, 150, 10, 1, Color.GREEN, 4);
+		shooters[5]  = new Shooter(400, 300, 10, 1, Color.YELLOW, 5);
+		shooters[6]  = new Shooter(100, 300, 10, 1, Color.DARK_GRAY, 6);
+		shooters[7]  = new Shooter(150, 110, 10, 1, Color.GRAY, 7);
+		shooters[8]  = new Shooter(100, 100, 10, 1, Color.MAGENTA, 8);
+		shooters[9]  = new Shooter(90, 100, 10, 1, Color.PINK, 9);
+		shooters[10] = new Shooter(100, 100, 10, 1, Color.ORANGE,10);
 
 		frame.add(this);
 		frame.setVisible(true);
@@ -67,13 +68,16 @@ public class Shooting extends JPanel implements KeyListener{
 		while(true){
 			// データの更新
 			try{Thread.sleep(1000/framerate);}catch(InterruptedException e){System.out.println(e);}
-			playerInterface(a_pressed, s_pressed, d_pressed, w_pressed);
+			playerInterface(a_pressed, s_pressed, d_pressed, w_pressed, j_pressed, k_pressed, l_pressed, i_pressed);
 			for (int i=0; i<shooters.length; i++) {
-
-				shooters[i].update(this.width, this.height);	
+				shooters[i].update(this.width, this.height);
 			}
 			//再描画
 			repaint();
+			// 機体の当たり判定を行う
+			isClisionAllShooter();
+			// 弾丸の当たり判定を行う
+			isShotAllShooter();
 		}
 	}
 	private boolean isOverlap(MoveObj a, MoveObj b){
@@ -84,7 +88,8 @@ public class Shooting extends JPanel implements KeyListener{
 		if(
 			a.isActive() &&
 			b.isActive() &&
-			Math.pow((a.getR() + b.getR()), 2) < (Math.pow((b.getY() - a.getY()), 2)) + (Math.pow((b.getX() - a.getX()), 2))
+			// (a.r = b.r)^2 > (a.y-b.x)^2 + (a.x - b.x)^2
+			Math.pow(a.getR() + b.getR(), 2) > ((Math.pow(b.getY() - a.getY(), 2)) + (Math.pow(b.getX() - a.getX(), 2)))
 			){
 			return true;
 		}
@@ -107,7 +112,6 @@ public class Shooting extends JPanel implements KeyListener{
 			}
 		}	
 	}
-
 	private void isShotAllShooter(){
 		/*
 			全てのアクティブな機体に弾丸がヒットしていないか調べ、ヒットしていた場合はその機体と弾丸のdie()メソッドを呼び出す関数
@@ -122,7 +126,7 @@ public class Shooting extends JPanel implements KeyListener{
 					bullets = shooters[j].getBullets();
 					for(int k=0; k<bullets.length; k++){
 						if(isOverlap(shooters[i], bullets[k])){
-							shooters[j].die();
+							shooters[i].die();
 							bullets[k].die();
 						}
 					}
@@ -130,80 +134,56 @@ public class Shooting extends JPanel implements KeyListener{
 			}
 		}
 	}
-	private void playerInterface(int a_pressed,int s_pressed,int d_pressed,int w_pressed){
+	private void playerInterface(int a_pressed,int s_pressed,int d_pressed,int w_pressed, int j_pressed, int k_pressed, int l_pressed, int i_pressed){
+		timeCnt += 1000/framerate;
 		this.shooters[0].setNextMove(d_pressed - a_pressed, s_pressed - w_pressed);
+		if (timeCnt > 100){	// 大体0.1秒ごと
+			if (l_pressed - j_pressed != 0 || k_pressed - i_pressed != 0){
+				this.shooters[0].shot(l_pressed - j_pressed, k_pressed - i_pressed);
+				timeCnt = 0;
+			}
+		}
 	}
 
 	@Override public void paint(Graphics g){
 		// 画面をリセット
 		g.clearRect(0, 0, this.width, this.height);
 		// 描画
-		for (int i=0; i<shooters.length; i++) {
+		for (int i=0; i<shooters.length; i++){
 			shooters[i].draw(g);
 		}
 	}
 	@Override public void keyPressed(KeyEvent e){
 		char key = e.getKeyChar();
-		if (key == 'a'){
-			a_pressed = 1;
-			System.out.println("OK?");
-		}
-		if (key == 's'){
-			s_pressed = 1;
-		}
-		if (key == 'd'){
-			d_pressed = 1;
-		}
-		if (key == 'w'){
-			w_pressed = 1;
-		}
+		if (key == 'a'){a_pressed = 1;}
+		if (key == 's'){s_pressed = 1;}
+		if (key == 'd'){d_pressed = 1;}
+		if (key == 'w'){w_pressed = 1;}
+		if (key == 'j'){j_pressed = 1;}
+		if (key == 'k'){k_pressed = 1;}
+		if (key == 'l'){l_pressed = 1;}
+		if (key == 'i'){i_pressed = 1;}
 	}
 	@Override public void keyReleased(KeyEvent e){
 		char key = e.getKeyChar();
-		if (key == 'a'){
-			a_pressed = 0;
-			System.out.println("OK?");
-		}
-		if (key == 's'){
-			s_pressed = 0;
-		}
-		if (key == 'd'){
-			d_pressed = 0;
-		}
-		if (key == 'w'){
-			w_pressed = 0;
-		}
+		if (key == 'a'){a_pressed = 0;}
+		if (key == 's'){s_pressed = 0;}
+		if (key == 'd'){d_pressed = 0;}
+		if (key == 'w'){w_pressed = 0;}
+		if (key == 'j'){j_pressed = 0;}
+		if (key == 'k'){k_pressed = 0;}
+		if (key == 'l'){l_pressed = 0;}
+		if (key == 'i'){i_pressed = 0;}
 	}
-	@Override public void keyTyped(KeyEvent e){
-		int key = e.getKeyChar();
-
-		if (key == 'k'){
-			shooters[0].shot(1,1);
-		}
-		else if (key == 'l'){
-			shooters[0].shot(1,1);
-		}
-		else if (key == ';'){
-			shooters[0].shot(1,1);
-		}
-		else if (key == 'o'){
-			shooters[0].shot(1,1);
-		}
-		else{
-			assert true;
-		}
-	}
+	@Override public void keyTyped(KeyEvent e){}
 }
 
 class MoveObj{
 	public final int id;
-	public int x, y;
-	public int speed;
-	public int r;
+	public int x, y, speed, r;
 	public Color color;
-	public boolean active;	// procで判定する
-
-	private int next_x, next_y;
+	public boolean active;
+	public int next_x, next_y;
 
 	public MoveObj(int x, int y, int r, int speed, Color color, int id){
 		this.x      = x;	// 機体の中心のx座標
@@ -220,73 +200,82 @@ class MoveObj{
 		this.next_x = next_x * this.speed;
 		this.next_y = next_y * this.speed;
 	}
-	public int getX(){
-		return this.x;
-	}
-	public void setX(int x){
-		this.x = x;
-	}
-	public int getY(){
-		return this.y;
-	}
-	public void setY(int y){
-		this.y = y;
-	}
-	public int getR(){
-		return this.r;
-	}
-	public boolean isActive(){
-		return active;
-	}
-	public void die(){
-		this.active = false;
-	}
+	public int getX(){return this.x;}
+	public void setX(int x){this.x = x;}
+	public int getY(){return this.y;}
+	public void setY(int y){this.y = y;}
+	public int getR(){return this.r;}
+	public boolean isActive(){return active;}
+	public void die(){this.active = false;}
+
 	public void update(int width, int height){
 		this.x += this.next_x;
 		this.y += this.next_y;
-
 		// 画面外に描画される場合は修正する
 		for(int i=0; i<10; i++){
-			if(this.x - this.r < 0){
-				this.x = this.r;
-			}
-			if(width < this.x + this.r){
-				this.x = width - this.r;
-			}
-			if(this.y - this.r < 0){
-				this.y = this.r;
-			}
-			if(height < this.y + this.r){
-				this.y = height - this.r;
-			}
+			if(this.x - this.r < 0){this.x = this.r;}
+			if(width < this.x + this.r){this.x = width - this.r;}
+			if(this.y - this.r < 0){this.y = this.r;}
+			if(height < this.y + this.r){this.y = height - this.r;}
 		}
 	}
 	public void draw(Graphics g){
-		g.setColor(this.color);
-		g.fillOval(this.x-this.r, this.y-this.r, this.r, this.r);
+		if (active){
+			g.setColor(this.color);
+			g.fillOval(this.x-this.r, this.y-this.r, 2*this.r, 2*this.r);
+		}
 	}
 }
 
 class Bullet extends MoveObj{
 	Bullet(int x, int y, int next_x, int next_y, int id){
-		super(x, y, 1, 1, Color.RED, id);
+		super(x, y, 3, 1, Color.RED, id);
+		setNextMove(next_x, next_y);
+	}
+	public void update(){
+		this.x += next_x;
+		this.y += next_y;
 	}
 }
 
 class Shooter extends MoveObj{
-
 	ArrayList<Bullet> bullets = new ArrayList<Bullet>(0);
-	public Shooter(int x, int y, int r, int speed, Color color, int id){
-		super(x, y, r, speed, color, id);
-	}
+	public Shooter(int x, int y, int r, int speed, Color color, int id){super(x, y, r, speed, color, id);}
 
 	public void shot(int next_x, int next_y){
 		// bulletsのsizeのidを持ったBulletをbulletsに追加
+		// もしnext_x, next_yが両方とも0なら発射しない
+		if (!active){return;}
 		bullets.add(new Bullet(this.getX(), this.getY(), next_x, next_y, bullets.size()));
 	}
-
-	public Bullet[] getBullets(){
-		return new Bullet[7];
+	public Bullet[] getBullets(){return bullets.toArray(new Bullet[bullets.size()]);}
+	public void update(int width, int height){
+		// MooveObjと同様に自分の機体のデータ更新を行う画面外禁止処理
+		this.x += this.next_x;
+		this.y += this.next_y;
+		// 画面外に描画される場合は修正する
+		for(int i=0; i<10; i++){
+			if(this.x - this.r < 0){this.x = this.r;}
+			if(width < this.x + this.r){this.x = width - this.r;}
+			if(this.y - this.r < 0){this.y = this.r;}
+			if(height < this.y + this.r){this.y = height - this.r;}
+		}
+		//自分の発射した弾丸のupdate()をする
+		for (int i=0; i<bullets.size(); i++) {
+			bullets.get(i).update();
+		}
+	}
+	public void draw(Graphics g){
+		// MoveObj同様に自分を描画する
+		if (active){
+			g.setColor(this.color);
+			g.fillOval(this.x-this.r, this.y-this.r, 2*this.r, 2*this.r);
+			// インスタンス化した弾丸を描画する
+			// 最終的には、画面外へでたものは配列から排除する仕様にすること
+		}
+		for (int i=0; i<bullets.size(); i++) {
+				bullets.get(i).draw(g);
+		}
 	}
 }
 
