@@ -51,17 +51,17 @@ public class Shooting extends JPanel implements KeyListener{
 		width  = this.getWidth();
 		height = this.getHeight();
 
-		shooters[0]  = new Shooter(250, 400, 10, 1, Color.BLUE);
-		shooters[1]  = new Shooter(60, 80, 10, 1, Color.LIGHT_GRAY);
-		shooters[2]  = new Shooter(80, 50, 10, 1, Color.BLACK);
-		shooters[3]  = new Shooter(90, 100, 10, 1, Color.CYAN);
-		shooters[4]  = new Shooter(50, 150, 10, 1, Color.GREEN);
-		shooters[5]  = new Shooter(400, 300, 10, 1, Color.YELLOW);
-		shooters[6]  = new Shooter(100, 300, 10, 1, Color.DARK_GRAY);
-		shooters[7]  = new Shooter(150, 110, 10, 1, Color.GRAY);
-		shooters[8]  = new Shooter(100, 100, 10, 1, Color.MAGENTA);
-		shooters[9]  = new Shooter(90, 100, 10, 1, Color.PINK);
-		shooters[10] = new Shooter(100, 100, 10, 1, Color.ORANGE);
+		shooters[0]  = new Shooter(250, 400, 10, Color.BLUE);
+		shooters[1]  = new Shooter(60, 80, 10, Color.LIGHT_GRAY);
+		shooters[2]  = new Shooter(80, 50, 10, Color.BLACK);
+		shooters[3]  = new Shooter(90, 100, 10, Color.CYAN);
+		shooters[4]  = new Shooter(50, 150, 10, Color.GREEN);
+		shooters[5]  = new Shooter(400, 300, 10, Color.YELLOW);
+		shooters[6]  = new Shooter(100, 300, 10, Color.DARK_GRAY);
+		shooters[7]  = new Shooter(150, 110, 10, Color.GRAY);
+		shooters[8]  = new Shooter(100, 100, 10, Color.MAGENTA);
+		shooters[9]  = new Shooter(90, 100, 10, Color.PINK);
+		shooters[10] = new Shooter(100, 100, 10, Color.ORANGE);
 
 		frame.add(this);
 		frame.setVisible(true);
@@ -193,11 +193,10 @@ class MoveObj{
 	public boolean active;
 	public int next_x, next_y;
 
-	public MoveObj(int x, int y, int r, int speed, Color color){
+	public MoveObj(int x, int y, int r, Color color){
 		this.x      = x;	// 機体の中心のx座標
 		this.y      = y;	// 機体の中心のy座標
 		this.r = r;
-		this.speed  = speed;
 		this.color  = color;
 		this.active = true;
 		this.next_x = 0;	// 次のframeで進むxの量
@@ -216,8 +215,8 @@ class MoveObj{
 	public void die(){this.active = false;}
 
 	public void update(int next_x, int next_y, int width, int height){
-		this.x += next_x * this.speed;
-		this.y += next_y * this.speed;
+		this.x += next_x;
+		this.y += next_y;
 		// 画面外に描画される場合は修正する
 		if(this.x - this.r < 0){this.x = this.r;}
 		if(width < this.x + this.r){this.x = width - this.r;}
@@ -237,7 +236,7 @@ class MoveObj{
 
 class Bullet extends MoveObj{
 	Bullet(int x, int y, int next_x, int next_y){
-		super(x, y, 3, 1, Color.RED);
+		super(x, y, 3, Color.RED);
 		setNextMove(next_x, next_y);
 	}
 	public void update(){
@@ -248,7 +247,7 @@ class Bullet extends MoveObj{
 
 class Shooter extends MoveObj{
 	ArrayList<Bullet> bullets = new ArrayList<Bullet>(0);
-	public Shooter(int x, int y, int r, int speed, Color color){super(x, y, r, speed, color);}
+	public Shooter(int x, int y, int r, Color color){super(x, y, r, color);}
 
 	public void shot(int next_x, int next_y){
 		// もしnext_x, next_yが両方とも0なら発射しない
